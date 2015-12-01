@@ -125,7 +125,7 @@ void runAuto()
         const unsigned previous = sCurrentStep;
         sCurrentStep = (sCurrentStep + 1) & 0x7;
         updatePins(previous);
-        if (yield(1000))
+        if (yield(500))
         {
             reset();
             break;
