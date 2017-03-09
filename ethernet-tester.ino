@@ -3,6 +3,8 @@
 // -----------------------------------------------------------------------------
 // Hardware Mapping - Arduino Leonardo
 
+#define ENABLE_SERIAL 0
+
 template<int Pin>
 class ToggleButton : public Bounce
 {
@@ -56,6 +58,7 @@ static const byte sModePin = 20; // A2
 static const byte sDecrPin = 21; // A3
 static const byte sIncrPin = 22; // A4
 static const byte sGndPin  = 23; // A5
+static const byte sLedPin  = 13; // LED
 
 ToggleButton<sModePin> sModeButton;
 ToggleButton<sIncrPin> sIncrButton;
@@ -75,7 +78,7 @@ struct RunningMode
 };
 
 byte sRunningMode = RunningMode::automatic;
-byte sCurrentStep = 0;
+byte sCurrentStep = 7;
 
 // -----------------------------------------------------------------------------
 
@@ -89,8 +92,10 @@ bool yield(unsigned inTime)
         if (sModeButton.process())
         {
             sRunningMode = !sRunningMode;
+#if ENABLE_SERIAL
             Serial.print("Running Mode: ");
             Serial.println(sRunningMode ? "manual" : "automatic");
+#endif
             return true;
         }
         delay(sSleepTime);
@@ -112,8 +117,14 @@ void updatePins(byte inPrevious)
 {
     digitalWrite(sOutputPins[inPrevious],   LOW);
     digitalWrite(sOutputPins[sCurrentStep], HIGH);
+#if ENABLE_SERIAL
     Serial.print("Pin ");
     Serial.println(sCurrentStep + 1);
+#else
+    digitalWrite(sLedPin, HIGH);
+    delay(50);
+    digitalWrite(sLedPin, LOW);
+#endif
 }
 
 // -----------------------------------------------------------------------------
@@ -173,10 +184,14 @@ void setup()
     {
         pinMode(sOutputPins[i], OUTPUT);
     }
+#if ENABLE_SERIAL
     Serial.begin(115200);
     while (!Serial);
     Serial.print("Ready. Running mode: ");
     Serial.println(sRunningMode ? "manual" : "automatic");
+#else
+    pinMode(sLedPin, OUTPUT);
+#endif
 }
 
 void loop()
